@@ -1,0 +1,2 @@
+# bayes
+Bayesian Inference
