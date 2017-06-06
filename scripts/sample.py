@@ -1,4 +1,5 @@
 from random import random, choice
+from datetime import date
 
 import numpy
 from scipy import stats
@@ -7,7 +8,6 @@ from matplotlib import pyplot
 
 
 class UnitSegmentDistribution(object):
-
     def __init__(self, range_min, range_max, scaling=1.):
         self._verified_hypothesis = 0
         self._failed_hypothesis = 0
@@ -30,7 +30,6 @@ class UnitSegmentDistribution(object):
 
 
 class DiscreteExperience(object):
-
     def __init__(self, outcomes, hypothesis_func):
         """
         
@@ -79,7 +78,7 @@ def test_coin():
 
 
 def test_dice():
-    experience = DiscreteExperience(['1', '2', '3', '4', '5', '6'], lambda x: x in ('1', ))
+    experience = DiscreteExperience(['1', '2', '3', '4', '5', '6'], lambda x: x in ('2', '3', '1'))
     for count in range(100000):
         if random() >= 0.6:
             experience.new_outcome('1')
@@ -91,5 +90,81 @@ def test_dice():
     pyplot.show()
 
 
+def test_stock_returns():
+    prices_data = [
+        ('2017-05-25', 128.47),
+        ('2017-05-24', 127.48),
+        ('2017-05-23', 127.97),
+        ('2017-05-22', 131.14),
+        ('2017-05-19', 128.69),
+        ('2017-05-18', 128.47),
+        ('2017-05-17', 128.69),
+        ('2017-05-16', 133.25),
+        ('2017-05-15', 135.16),
+        ('2017-05-12', 134.68),
+        ('2017-05-11', 134.39),
+        ('2017-05-10', 134.06),
+        ('2017-05-09', 137.45),
+        ('2017-05-08', 138.43),
+        ('2017-05-05', 141.07),
+        ('2017-05-04', 139.39),
+        ('2017-05-03', 138.37),
+        ('2017-05-02', 139.79),
+        ('2017-05-01', 138.27)
+    ]
+    prices = {'date': [date(int(field_date[:4]),int(field_date[5:7]),int(field_date[-2:])) for field_date, field_value in prices_data],
+             'price': [float(field_price) for field_date, field_price in prices_data]
+             }
+    df = pandas.DataFrame(prices)
+    print(df)
+
+
+def test_pattern():
+    pattern = """
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . O . . . . . . . . . . .
+    . . . . . . . . . . . . . . X . X . .
+    . . . . O . . . O . . . O . . . . . .
+    . . . . . . O . . . O . . O . X . X .
+    . . . . . . . . O . . . O . . . . . .
+    . . . O . . O . . . X . . . . X . . .
+    . . . . O . . . X . . . X . . . X . .
+    . . . . . . . . . . X . X . X . . . .
+    . . . O . O . . X . . . . . . . . . .
+    . . . . O . . X . . . X . . X . . . .
+    . . . O . . . . . . . . . . . . . . .
+    . . . . O . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    . . . . . . . . . . . . . . . . . . .
+    """
+    rows = [''.join([symbol for symbol in row if symbol != ' ']) for row in pattern.split('\n') if len(row) > 0]
+    coordinates_type_x = list()
+    coordinates_type_o = list()
+    coordinates_all = list()
+    for row_index, row in enumerate(rows):
+        for column_index, column in enumerate(row):
+            coordinates = (row_index, column_index)
+            coordinates_all.append(coordinates)
+            if column == 'O':
+                coordinates_type_o.append(coordinates)
+
+            elif column == 'X':
+                coordinates_type_x.append(coordinates)
+
+    print(coordinates_type_x)
+    print(coordinates_type_o)
+    experience = DiscreteExperience(coordinates_all, lambda coord: coord in coordinates_type_x)
+    for coordinates in coordinates_type_x:
+        experience.new_outcome(coordinates)
+
+    experience.discrete(1000.).plot()
+    pyplot.show()
+
+
 if __name__ == '__main__':
-    test_dice()
+    test_pattern()

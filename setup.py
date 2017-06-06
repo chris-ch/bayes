@@ -9,5 +9,5 @@ setup(
     license='',
     author='Christophe',
     author_email='',
-    description=''
+    description='', requires=['numpy', 'scipy', 'pandas', 'matplotlib', 'pymc3']
 )
