@@ -14,10 +14,10 @@ def generate_data_multi():
     beta = [0.5, 0.5, -0.02, 5.]
     y_true = numpy.dot(x, beta)
     y = y_true + numpy.random.normal(scale=sigma, size=size)
-    return t, x, y, y_true, 3
+    return t, x, y, y_true, len(beta) - 1
 
 
-def generate_data():
+def generate_data_single():
     size = 200
     sigma = 0.5
     t = numpy.linspace(0, 1, size)
@@ -26,12 +26,38 @@ def generate_data():
     beta = [2, 1.]
     y_true = numpy.dot(x, beta)
     y = y_true + numpy.random.normal(scale=sigma, size=size)
-    return t, x, y, y_true, 1
+    return t, x, y, y_true, len(beta) - 1
+
+
+class DataGenerator(object):
+
+    def __init__(self, scale):
+        self._scale = scale
+        self._weights = list()
+        self._funcs = list()
+
+    def add_variable(self, weight, func):
+        self._weights.append(weight)
+        self._funcs.append(func)
+
+    def run(self):
+        size = 200
+        sigma = 0.5
+        t = numpy.linspace(0, 1, size) * self._scale
+        x = numpy.column_stack([func(t, size) for func in self._funcs])
+        y_true = numpy.dot(x, self._weights)
+        y = y_true + numpy.random.normal(scale=sigma, size=size)
+        return t, x, y, y_true, len(self._weights) - 1
 
 
 def main():
     numpy.random.seed(1)
-    x, X, y, y_true, dimension = generate_data()
+    data_gen = DataGenerator(scale=20.)
+    data_gen.add_variable(0.5, lambda t, size: t)
+    data_gen.add_variable(0.5, lambda t, size: numpy.sin(t))
+    data_gen.add_variable(-0.02, lambda t, size: (t - 5) ** 2)
+    data_gen.add_variable(5., lambda t, size: numpy.ones(size))
+    x, X, y, y_true, dimension = data_gen.run()
 
     #fig = pyplot.figure(figsize=(7, 7))
     #ax = fig.add_subplot(1, 1, 1, xlabel='x', ylabel='y', title='Generated data and underlying model')
